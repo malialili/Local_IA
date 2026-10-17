@@ -1,0 +1,101 @@
+version: '3.8'
+
+# Docker Compose avec pré-téléchargement automatique des modèles au démarrage
+# Utilisation: docker compose -f docker-compose-preload.yml up -d
+# 
+# Ce fichier étend la configuration de base avec un script d'initialisation
+# qui télécharge automatiquement les modèles spécifiés avant de lancer Open WebUI
+
+services:
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
+    restart: unless-stopped
+    volumes:
+      - ollama_data:/root/.ollama
+    ports:
+      - "11434:11434"
+    networks:
+      - llm_network
+    environment:
+      - OLLAMA_HOST=0.0.0.0
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:11434/api/tags"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Service d'initialisation pour pré-télécharger les modèles
+  ollama-init:
+    image: ollama/ollama:latest
+    container_name: ollama-init
+    depends_on:
+      ollama:
+        condition: service_healthy
+    volumes:
+      - ollama_data:/root/.ollama
+    networks:
+      - llm_network
+    environment:
+      - OLLAMA_HOST=ollama
+    command: >
+      sh -c '
+      echo "⏳ Attente que Ollama soit prêt..." &&
+      sleep 10 &&
+      
+      # Liste des modèles à pré-télécharger (modifiez cette liste)
+      MODELS="llama3.2:3b mistral:7b phi3:3.8b"
+      
+      echo "📥 Début du téléchargement des modèles..." &&
+      for model in $$MODELS; do
+        echo "🔍 Vérification de $$model..." &&
+        if ! ollama list | grep -q "$$model"; then
+          echo "📥 Téléchargement de $$model..." &&
+          ollama pull "$$model" &&
+          echo "✅ $$model téléchargé" ||
+          echo "❌ Échec du téléchargement de $$model"
+        else
+          echo "✅ $$model déjà présent"
+        fi
+      done &&
+      
+      echo "✅ Initialisation terminée !" &&
+      echo "💤 Arrêt du conteneur d'initialisation..." &&
+      sleep infinity
+      '
+    restart: "no"
+    profiles:
+      - init
+
+  open-webui:
+    image: ghcr.io/open-webui/open-webui:main
+    container_name: open-webui
+    restart: unless-stopped
+    volumes:
+      - open_webui_data:/app/backend/data
+    ports:
+      - "8080:8080"
+    networks:
+      - llm_network
+    environment:
+      - OLLAMA_BASE_URL=http://ollama:11434
+      - WEBUI_AUTH=False
+      - WEBUI_NAME=Local_LLM_IA
+    depends_on:
+      ollama:
+        condition: service_healthy
+
+networks:
+  llm_network:
+    driver: bridge
+
+volumes:
+  ollama_data:
+  open_webui_data:

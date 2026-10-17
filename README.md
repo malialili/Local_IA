@@ -110,6 +110,91 @@ docker exec ollama ollama pull gemma2:9b
 docker exec ollama ollama list
 ```
 
+### 📜 Script de téléchargement automatique
+
+Un script `scripts/pull_models.sh` est disponible pour simplifier le téléchargement :
+
+```bash
+# Rendre le script exécutable (une seule fois)
+chmod +x scripts/pull_models.sh
+
+# Télécharger des modèles spécifiques
+./scripts/pull_models.sh llama3.2:3b mistral:7b
+
+# Télécharger tous les modèles recommandés
+./scripts/pull_models.sh --all
+
+# Télécharger uniquement les modèles de code
+./scripts/pull_models.sh --code
+
+# Télécharger uniquement les modèles légers (< 5 Go)
+./scripts/pull_models.sh --small
+
+# Lister les modèles déjà téléchargés
+./scripts/pull_models.sh --list
+
+# Afficher l'aide
+./scripts/pull_models.sh --help
+```
+
+### 🐳 Pré-téléchargement au démarrage
+
+#### Option 1: Utiliser docker-compose-preload.yml (recommandé)
+
+Ce fichier lance un conteneur d'initialisation qui télécharge les modèles **avant** de démarrer Open WebUI.
+
+```bash
+# Modifier la liste des modèles dans docker-compose-preload.yml
+# (ligne: MODELS="llama3.2:3b mistral:7b phi3:3.8b")
+
+# Démarrer avec pré-téléchargement
+docker compose -f docker-compose-preload.yml up -d
+
+# Voir les logs de l'initialisation
+docker compose -f docker-compose-preload.yml logs -f ollama-init
+```
+
+**Avantages:**
+- Les modèles sont prêts avant que l'interface ne soit accessible
+- Pas besoin de créer une grosse image Docker
+- Flexible : modifiez la liste des modèles à tout moment
+
+#### Option 2: Créer une image Docker avec modèles intégrés
+
+Pour les environnements où vous voulez une image autonome avec les modèles inclus.
+
+```bash
+# Modifier Dockerfile.ollama pour changer les modèles
+# (ligne: ARG MODELS_TO_PRELOAD="llama3.2:3b mistral:7b")
+
+# Construire l'image (ATTENTION: peut prendre beaucoup de temps et d'espace)
+docker compose -f docker-compose-with-models.yml build
+
+# Démarrer
+docker compose -f docker-compose-with-models.yml up -d
+```
+
+**⚠️ Attention:**
+- L'image résultante sera très grande (plusieurs Go)
+- Le build peut prendre beaucoup de temps
+- Recommandé uniquement pour les petits modèles ou les déploiements en production
+
+#### Option 3: Utiliser un volume partagé avec modèles pré-téléchargés
+
+1. Téléchargez les modèles manuellement sur votre machine
+2. Montez le dossier local dans le conteneur
+
+```yaml
+# Dans docker-compose.yml, modifiez la section volumes de ollama:
+services:
+  ollama:
+    volumes:
+      - ./ollama_models:/root/.ollama
+      # Au lieu de: - ollama_data:/root/.ollama
+```
+
+Puis placez vos modèles dans `./ollama_models` avant de démarrer.
+
 ## Commandes utiles
 
 ### Voir les logs

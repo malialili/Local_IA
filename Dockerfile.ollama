@@ -1,0 +1,43 @@
+# Dockerfile pour Ollama avec modèles pré-chargés
+# Ce fichier crée une image Docker avec Ollama et les modèles spécifiés pré-téléchargés
+#
+# Utilisation:
+#   docker build -t my-ollama-with-models -f Dockerfile.ollama .
+#
+# AVERTISSEMENT: Le téléchargement des modèles peut prendre beaucoup de temps
+# et l'image résultante sera très grande (plusieurs Go).
+
+FROM ollama/ollama:latest
+
+# Configuration des modèles à pré-charger
+# Modifiez cette liste selon vos besoins
+ARG MODELS_TO_PRELOAD="llama3.2:3b mistral:7b phi3:3.8b"
+
+# Variable pour contrôler si on télécharge les modèles pendant le build
+ARG PRELOAD_MODELS=true
+
+# Créer le répertoire des modèles
+RUN mkdir -p /root/.ollama/models
+
+# Télécharger les modèles si PRELOAD_MODELS=true
+# NOTE: Cela peut prendre beaucoup de temps et créer une très grande image
+# Pour les grands modèles (>10 Go), envisagez d'utiliser docker-compose-preload.yml
+RUN if [ "$PRELOAD_MODELS" = "true" ]; then \
+    echo "📥 Début du pré-téléchargement des modèles..." && \
+    for model in $MODELS_TO_PRELOAD; do \
+      echo "📥 Téléchargement de $$model..." && \
+      ollama pull "$$model" && \
+      echo "✅ $$model téléchargé" || \
+      echo "❌ Échec du téléchargement de $$model"; \
+    done && \
+    echo "✅ Tous les modèles pré-téléchargés" || \
+    echo "⚠️ Certains modèles n'ont pas pu être téléchargés"; \
+  else \
+    echo "⏭️ Pré-téléchargement des modèles désactivé (PRELOAD_MODELS=false)"; \
+  fi
+
+# Configuration par défaut
+ENV OLLAMA_HOST=0.0.0.0
+
+# Afficher les modèles disponibles au démarrage
+CMD ["sh", "-c", "echo '🚀 Ollama démarré avec les modèles suivants:' && ollama list && exec ollama serve"]
