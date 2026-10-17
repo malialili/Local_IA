@@ -56,10 +56,59 @@ curl -X POST http://localhost:11434/api/pull -d '{"name": "llama3.2:3b"}'
 
 ## Modèles recommandés
 
-- `llama3.2:3b` - Léger, bon pour les tests
-- `llama3.2:11b` - Équilibre performance/ressources
-- `mistral:7b` - Alternative performante
-- `phi3:3.8b` - Optimisé pour le raisonnement
+### 🔥 Modèles Llama (Meta)
+- `llama3.2:3b` - Léger, bon pour les tests (3B paramètres)
+- `llama3.2:11b` - Équilibre performance/ressources (11B paramètres)
+- `llama3.2:1b` - Ultra-léger pour les machines limitées
+- `llama3.2:90b` - Très performant (nécessite beaucoup de RAM/GPU)
+
+### ⚡ Modèles Mistral AI
+- `mistral:7b` - Alternative performante, excellent pour le code
+- `mistral-nemo:12b` - Modèle optimisé pour le raisonnement
+- `mixtral:8x7b` - Modèle expert (mélange de 8 modèles 7B)
+
+### 🧠 Modèles Microsoft Phi
+- `phi3:3.8b` - Optimisé pour le raisonnement et les tâches logiques
+- `phi3:14b` - Plus puissant, bon pour les tâches complexes
+- `phi3.5:3.8b` - Version améliorée avec meilleur raisonnement
+
+### 🤖 Modèles Gemma (Google)
+- `gemma:2b` - Modèle léger et rapide
+- `gemma:7b` - Bonne performance générale
+- `gemma2:9b` - Nouvelle génération, très performant
+
+### 📊 Modèles Code (spécialisés pour le développement)
+- `codellama:7b` - Optimisé pour la génération de code
+- `codegemma:7b` - Alternative pour le code
+- `deepseek-coder:6.7b` - Excellente compréhension du code
+
+### 💡 Comment choisir ?
+| Besoin | Modèle recommandé | RAM requise | GPU recommandé |
+|--------|------------------|-------------|----------------|
+| Tests rapides | `llama3.2:3b` ou `phi3:3.8b` | 4-6 Go | Optionnel |
+| Usage général | `llama3.2:11b` ou `mistral:7b` | 8-12 Go | 12 Go+ |
+| Développement | `codellama:7b` ou `deepseek-coder:6.7b` | 8-10 Go | 12 Go+ |
+| Raisonnement | `phi3.5:3.8b` ou `llama3.2:11b` | 8-12 Go | 12 Go+ |
+| Haute performance | `llama3.2:90b` ou `mixtral:8x7b` | 48 Go+ | 48 Go+ |
+
+### 📥 Téléchargement via l'interface
+1. Ouvrez Open WebUI sur `http://localhost:8080`
+2. Allez dans l'onglet **Models**
+3. Cliquez sur **Pull** et sélectionnez un modèle dans la liste
+4. Ou entrez manuellement le nom du modèle (ex: `gemma2:9b`)
+5. Attendez la fin du téléchargement (peut prendre plusieurs minutes)
+
+### 🚀 Téléchargement en ligne de commande
+
+```bash
+# Télécharger plusieurs modèles d'un coup
+docker exec ollama ollama pull llama3.2:3b
+docker exec ollama ollama pull mistral:7b
+docker exec ollama ollama pull gemma2:9b
+
+# Vérifier les modèles téléchargés
+docker exec ollama ollama list
+```
 
 ## Commandes utiles
 
