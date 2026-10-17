@@ -2,6 +2,107 @@
 
 Projet pour exécuter des modèles de langage (LLM) localement avec **Ollama** et une interface graphique **Open WebUI**.
 
+## 🏗️ Architecture : Ollama vs Open WebUI
+
+### 🎯 **Différence fondamentale**
+
+**Ollama** et **Open WebUI** sont **complémentaires** mais ont des rôles distincts :
+
+```
+┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
+│                 │     │                 │     │                 │
+│   👤 VOUS       │────▶│   Open WebUI    │────▶│     Ollama      │
+│   (Navigateur)  │     │   (Frontend)     │     │   (Backend)     │
+│                 │     │   Port: 8080     │     │   Port: 11434   │
+└─────────────────┘     └─────────────────┘     └─────────────────┘
+       │                        │                        │
+       │                        ▼                        ▼
+       │                ┌─────────────────────────────────┐
+       │                │  Réseau Docker (llm_network)     │
+       │                └─────────────────────────────────┘
+       │                        │
+       ▼                        │
+┌─────────────────┐             │
+│  💬 Interface    │◀────────────┘
+│  📝 Conversations│
+│  ⚙️  Paramètres  │
+└─────────────────┘
+```
+
+### 🔧 **Ollama : Le Moteur (Backend)**
+
+| **Fonction** | **Description** |
+|--------------|----------------|
+| 🧠 **Exécution des modèles** | Lance Llama, Mistral, Phi, Gemma, etc. sur votre machine |
+| 💾 **Gestion des modèles** | Télécharge, stocke et met à jour les fichiers de modèles |
+| 🌐 **API REST** | Fournit une interface sur `http://localhost:11434` |
+| ⚡ **Optimisation** | Gère la mémoire, le GPU, la quantisation (4-bit par défaut) |
+| 📊 **Inférence** | Traite les requêtes et génère les réponses |
+
+**Exemple d'utilisation directe (sans Open WebUI) :**
+```bash
+# Demander une réponse via l'API Ollama
+curl http://localhost:11434/api/generate -d '{
+  "model": "llama3.2:3b",
+  "prompt": "Explique la photosynthèse simplement",
+  "stream": false
+}'
+```
+
+### 🎨 **Open WebUI : L'Interface (Frontend)**
+
+| **Fonction** | **Description** |
+|--------------|----------------|
+| 🖥️ **Interface Web** | Belle UI accessible sur `http://localhost:8080` |
+| 💬 **Gestion des conversations** | Historique, organisation, partage des chats |
+| ⚙️ **Configuration visuelle** | Changer de modèle et paramètres sans CLI |
+| 🔌 **Multi-backend** | Peut se connecter à Ollama, LocalAI, LM Studio, etc. |
+| 🎨 **Expérience utilisateur** | Thèmes, plugins, personnalisation |
+
+**À quoi ça ressemble :**
+> Une interface moderne type ChatGPT, avec sélection de modèle, historique des conversations, et paramètres avancés.
+
+### 🔄 **Comment ils communiquent ?**
+
+1. **Vous** envoyez une requête via Open WebUI (navigateur)
+2. **Open WebUI** transmet la requête à Ollama via l'API (`http://ollama:11434`)
+3. **Ollama** exécute le modèle et génère la réponse
+4. **Ollama** renvoie la réponse à Open WebUI
+5. **Open WebUI** affiche la réponse dans votre navigateur
+
+### 📊 **Tableau comparatif**
+
+| **Critère** | **Ollama** | **Open WebUI** |
+|------------|-----------|----------------|
+| **Rôle** | Moteur LLM (Backend) | Interface graphique (Frontend) |
+| **Port** | 11434 | 8080 |
+| **Nécéssaire pour faire tourner les modèles ?** | ✅ Oui | ❌ Non |
+| **Nécéssaire pour une interface graphique ?** | ❌ Non | ✅ Oui |
+| **Gère les modèles** | ✅ Oui | ❌ Non |
+| **Stocke les conversations** | ❌ Non | ✅ Oui |
+| **Type d'utilisation** | API (code, scripts) | Navigateur web |
+| **Alternatives** | LocalAI, LM Studio, vLLM | Text Generation WebUI, etc. |
+
+### 💡 **Peut-on utiliser Ollama sans Open WebUI ?**
+✅ **OUI** - Via l'API directe, des scripts Python, ou en ligne de commande :
+```bash
+# Utilisation basique
+docker exec ollama ollama run llama3.2:3b "Explique moi l'IA"
+
+# Avec streaming
+docker exec ollama ollama run mistral:7b "Quelle est la capitale de la France ?"
+```
+
+### 💡 **Peut-on utiliser Open WebUI sans Ollama ?**
+✅ **OUI** - Open WebUI peut se connecter à d'autres backends :
+- LocalAI
+- LM Studio
+- API compatibles OpenAI
+- Fournisseurs cloud (OpenAI, Anthropic, etc.)
+
+**Configuration :**
+Modifiez `OLLAMA_BASE_URL` dans `.env` pour pointer vers un autre backend.
+
 ## Prérequis
 
 - [Docker](https://www.docker.com/) et [Docker Compose](https://docs.docker.com/compose/) installés
