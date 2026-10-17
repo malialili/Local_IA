@@ -1,0 +1,37 @@
+apiVersion: 1
+
+# Liste des datasources Grafana
+# Ce fichier est automatiquement chargé au démarrage
+
+datasources:
+  # Prometheus comme source de données principale
+  - name: Prometheus
+    type: prometheus
+    access: proxy
+    url: http://prometheus:9090
+    isDefault: true
+    editable: true
+    jsonData:
+      tlsAuth: false
+      tlsAuthWithCACert: false
+    secureJsonData:
+      tlsCACert: ""
+      tlsClientCert: ""
+      tlsClientKey: ""
+    version: 1
+
+  # Node Exporter (optionnel, peut être inclus dans Prometheus)
+  - name: Node Exporter
+    type: prometheus
+    access: proxy
+    url: http://node-exporter:9100
+    isDefault: false
+    editable: true
+
+  # cAdvisor (optionnel)
+  - name: cAdvisor
+    type: prometheus
+    access: proxy
+    url: http://cadvisor:8080
+    isDefault: false
+    editable: true

@@ -1,6 +1,158 @@
 # Local_IA
 
-Projet pour exécuter des modèles de langage (LLM) localement avec **Ollama** et une interface graphique **Open WebUI**.
+[![Docker](https://img.shields.io/badge/Docker-Ready-blue?logo=docker)](https://docker.com)
+[![Ollama](https://img.shields.io/badge/Ollama-Supported-green?logo=ollama)](https://ollama.ai)
+[![Open WebUI](https://img.shields.io/badge/Open_WebUI-Latest-orange)](https://openwebui.com)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Stars](https://img.shields.io/github/stars/malialili/Local_IA?style=social)](https://github.com/malialili/Local_IA)
+[![Issues](https://img.shields.io/github/issues/malialili/Local_IA)](https://github.com/malialili/Local_IA/issues)
+[![Pull Requests](https://img.shields.io/github/issues-pr/malialili/Local_IA)](https://github.com/malialili/Local_IA/pulls)
+
+**Projet pour exécuter des modèles de langage (LLM) localement avec une interface graphique complète.**
+
+---
+
+## 🌟 **Nouveautés**
+
+✨ **Dernières améliorations :**
+- 📁 **Structure de projet organisée** avec dossiers dédiés (`docker/`, `scripts/`, `configs/`, `docs/`)
+- 🐳 **4 configurations Docker Compose** : base, GPU, CPU, multi-backend, monitoring
+- 📜 **5 scripts de maintenance** : pull_models, cleanup, backup, restore, update, monitor
+- 📊 **Documentation complète** : benchmarks, troubleshooting, configuration avancée
+- 🎨 **Monitoring intégré** avec Prometheus + Grafana + tableau de bord pré-configuré
+- 🔧 **Pré-téléchargement automatique** des modèles au démarrage
+
+---
+
+## 📂 **Structure du Projet**
+
+```
+Local_IA/
+├── docker/
+│   ├── compose/
+│   │   ├── base.yml          # Configuration de base (Ollama + Open WebUI)
+│   │   ├── gpu.yml           # Optimisé pour GPU NVIDIA
+│   │   ├── cpu.yml           # Optimisé pour CPU seulement
+│   │   ├── preload.yml       # Avec pré-téléchargement des modèles
+│   │   ├── with-models.yml   # Image Docker avec modèles intégrés
+│   │   ├── multi.yml         # Multi-backend (Ollama + LocalAI)
+│   │   └── monitoring.yml    # Monitoring complet (Prometheus + Grafana)
+│   └── Dockerfile.ollama     # Pour construire une image avec modèles
+├── scripts/
+│   ├── pull_models.sh        # Télécharger des modèles
+│   ├── cleanup.sh            # Nettoyer les modèles inutilisés
+│   ├── backup.sh             # Sauvegarder les données
+│   ├── restore.sh            # Restaurer une sauvegarde
+│   ├── update.sh             # Mettre à jour Ollama + Open WebUI
+│   └── monitor.sh            # Monitorer l'utilisation des ressources
+├── configs/
+│   ├── .env.example          # Configuration par défaut
+│   └── openwebui/            # Configurations Open WebUI
+├── monitoring/
+│   ├── prometheus.yml        # Configuration Prometheus
+│   └── grafana/              # Configuration Grafana + dashboards
+├── docs/
+│   ├── benchmarks.md         # Comparaison détaillée des modèles
+│   └── (autres docs)         # Documentation supplémentaire
+├── .gitignore
+├── LICENSE
+└── README.md
+```
+
+---
+
+## 🚀 **Démarrage Rapide**
+
+### Option 1: Configuration de base (recommandée)
+```bash
+git clone https://github.com/malialili/Local_IA.git
+cd Local_IA
+
+# Copier la configuration
+cp configs/.env.example .env
+
+# Démarrer les services
+docker compose -f docker/compose/base.yml up -d
+
+# Accéder à l'interface
+# http://localhost:8080
+```
+
+### Option 2: Avec GPU NVIDIA
+```bash
+docker compose -f docker/compose/gpu.yml up -d
+```
+
+### Option 3: Avec pré-téléchargement des modèles
+```bash
+# Modifier la liste des modèles dans docker/compose/preload.yml
+docker compose -f docker/compose/preload.yml up -d
+```
+
+### Option 4: Avec monitoring complet
+```bash
+docker compose -f docker/compose/monitoring.yml up -d
+# Prometheus: http://localhost:9090
+# Grafana: http://localhost:3000 (admin/admin)
+```
+
+---
+
+## 🎯 **Commandes Utiles**
+
+| Commande | Description |
+|----------|-------------|
+| `docker compose -f docker/compose/base.yml up -d` | Démarrer les services de base |
+| `docker compose -f docker/compose/base.yml down` | Arrêter les services |
+| `docker compose -f docker/compose/base.yml logs -f` | Voir les logs en temps réel |
+| `./scripts/pull_models.sh llama3.2:3b mistral:7b` | Télécharger des modèles |
+| `./scripts/pull_models.sh --all` | Télécharger tous les modèles recommandés |
+| `./scripts/cleanup.sh --dry-run` | Voir quels modèles seraient supprimés |
+| `./scripts/cleanup.sh --keep llama3.2:3b` | Nettoyer en gardant certains modèles |
+| `./scripts/backup.sh ./backups/` | Sauvegarder les données |
+| `./scripts/restore.sh ./backups/backup.tar.gz` | Restaurer une sauvegarde |
+| `./scripts/update.sh` | Mettre à jour Ollama et Open WebUI |
+| `./scripts/monitor.sh` | Monitorer l'utilisation des ressources |
+| `./scripts/monitor.sh --continuous` | Monitoring en continu |
+
+---
+
+## 📚 **Documentation**
+
+- [📊 **Benchmarks des Modèles**](docs/benchmarks.md) - Comparaison détaillée des performances
+- [🏗️ **Architecture**](#-architecture-ollama-vs-open-webui) - Explication Ollama vs Open WebUI
+- [🎨 **Configuration Avancée**](#-configuration-avancée) - Personnalisation et optimisation
+
+---
+
+## 🤝 **Contribuer**
+
+Les contributions sont les bienvenues !
+
+1. Fork le projet
+2. Créez une branche (`git checkout -b feature/ma-fonctionnalité`)
+3. Committez vos changements (`git commit -m 'Ajout de ma fonctionnalité'`)
+4. Poussez vers la branche (`git push origin feature/ma-fonctionnalité`)
+5. Ouvrez une Pull Request
+
+---
+
+## 📜 **Licence**
+
+Ce projet est sous licence **MIT** - voir le fichier [LICENSE](LICENSE) pour plus de détails.
+
+---
+
+## 🙏 **Remerciements**
+
+- [Ollama](https://ollama.ai) - Pour le moteur LLM local
+- [Open WebUI](https://openwebui.com) - Pour l'interface graphique
+- [Docker](https://docker.com) - Pour la conteneurisation
+- Tous les contributeurs open-source qui rendent ce projet possible !
+
+---
+
+
 
 ## 🏗️ Architecture : Ollama vs Open WebUI
 

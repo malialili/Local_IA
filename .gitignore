@@ -1,0 +1,48 @@
+# Ignorer les fichiers de configuration locale
+.env
+
+# Ignorer les volumes Docker locaux
+*.tar
+*.tar.gz
+*.zip
+
+# Ignorer les sauvegardes
+backups/
+*.backup
+
+# Ignorer les logs
+*.log
+logs/
+
+# Ignorer les fichiers temporaires
+*.tmp
+*.swp
+.DS_Store
+Thumbs.db
+
+# Ignorer les données Docker (volumes)
+# docker/
+#   ollama_data/
+#   open_webui_data/
+#   prometheus_data/
+#   grafana_data/
+
+# Ignorer les données de monitoring locales
+# monitoring/
+#   prometheus/
+#   grafana/
+
+# Ignorer les IDE
+.idea/
+.vscode/
+*.sublime-workspace
+*.sublime-project
+
+# Ignorer les fichiers de build
+build/
+dist/
+*.exe
+
+# Ignorer les données de test
+test/
+coverage/

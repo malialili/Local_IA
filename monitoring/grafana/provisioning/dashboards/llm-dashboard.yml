@@ -1,0 +1,322 @@
+apiVersion: 1
+
+# Tableau de bord Grafana pour le monitoring des LLM
+# Ce fichier crée un tableau de bord pré-configuré pour surveiller Ollama et Open WebUI
+
+providers:
+  - name: 'LLM Monitoring'
+    orgId: 1
+    folder: 'Local IA'
+    type: file
+    disableDeletion: false
+    editable: true
+    options:
+      path: /etc/grafana/provisioning/dashboards
+      foldersFromFilesStructure: true
+
+# Configuration du tableau de bord
+dashboards:
+  - name: 'Local IA - Overview'
+    orgId: 1
+    folderId: 0
+    type: file
+    options:
+      path: /etc/grafana/provisioning/dashboards
+      folder: 'Local IA'
+    dashboard:
+      title: 'Local IA - Overview'
+      uid: 'local-ia-overview'
+      tags:
+        - 'llm'
+        - 'ollama'
+        - 'open-webui'
+      timezone: 'browser'
+      schemaVersion: 37
+      version: 1
+      refresh: '30s'
+      panels:
+        # Row 1: Métriques globales
+        - title: 'Métriques Globales'
+          type: row
+          gridPos:
+            h: 1
+            w: 24
+            x: 0
+            y: 0
+          collapsed: false
+
+        # CPU Usage
+        - title: 'Utilisation CPU'
+          type: graph
+          gridPos:
+            h: 8
+            w: 8
+            x: 0
+            y: 1
+          targets:
+            - expr: '100 - (avg by(instance) (rate(node_cpu_seconds_total{mode="idle"}[1m])) * 100)'
+              legendFormat: '{{instance}}'
+          yaxes:
+            - format: percent
+              label: 'Utilisation'
+              min: 0
+              max: 100
+
+        # Memory Usage
+        - title: 'Utilisation Mémoire'
+          type: graph
+          gridPos:
+            h: 8
+            w: 8
+            x: 8
+            y: 1
+          targets:
+            - expr: '(node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes * 100'
+              legendFormat: 'Mémoire utilisée'
+          yaxes:
+            - format: percent
+              label: 'Utilisation'
+              min: 0
+              max: 100
+
+        # GPU Usage (si disponible)
+        - title: 'Utilisation GPU'
+          type: graph
+          gridPos:
+            h: 8
+            w: 8
+            x: 16
+            y: 1
+          targets:
+            - expr: 'nvidia_gpu_utilization'
+              legendFormat: '{{gpu}} - Utilisation'
+            - expr: 'nvidia_gpu_memory_utilized_bytes / nvidia_gpu_memory_total_bytes * 100'
+              legendFormat: '{{gpu}} - Mémoire'
+          yaxes:
+            - format: percent
+              label: 'Utilisation'
+              min: 0
+              max: 100
+
+        # Row 2: Conteneurs Docker
+        - title: 'Conteneurs Docker'
+          type: row
+          gridPos:
+            h: 1
+            w: 24
+            x: 0
+            y: 9
+          collapsed: false
+
+        # Ollama Container CPU
+        - title: 'Ollama - Utilisation CPU'
+          type: graph
+          gridPos:
+            h: 8
+            w: 8
+            x: 0
+            y: 10
+          targets:
+            - expr: 'rate(container_cpu_usage_seconds_total{container_name="ollama"}[1m]) * 100'
+              legendFormat: 'Ollama CPU'
+          yaxes:
+            - format: percent
+              min: 0
+
+        # Ollama Container Memory
+        - title: 'Ollama - Utilisation Mémoire'
+          type: graph
+          gridPos:
+            h: 8
+            w: 8
+            x: 8
+            y: 10
+          targets:
+            - expr: 'container_memory_usage_bytes{container_name="ollama"} / 1024 / 1024 / 1024'
+              legendFormat: 'Ollama RAM (Go)'
+          yaxes:
+            - format: bytes
+              label: 'Mémoire (Go)'
+              min: 0
+
+        # Open WebUI Container CPU
+        - title: 'Open WebUI - Utilisation CPU'
+          type: graph
+          gridPos:
+            h: 8
+            w: 8
+            x: 16
+            y: 10
+          targets:
+            - expr: 'rate(container_cpu_usage_seconds_total{container_name="open-webui"}[1m]) * 100'
+              legendFormat: 'Open WebUI CPU'
+          yaxes:
+            - format: percent
+              min: 0
+
+        # Row 3: Modèles et Stockage
+        - title: 'Modèles et Stockage'
+          type: row
+          gridPos:
+            h: 1
+            w: 24
+            x: 0
+            y: 18
+          collapsed: false
+
+        # Disk Usage
+        - title: 'Utilisation Disque'
+          type: graph
+          gridPos:
+            h: 8
+            w: 8
+            x: 0
+            y: 19
+          targets:
+            - expr: 'node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"} * 100'
+              legendFormat: 'Espace disponible'
+          yaxes:
+            - format: percent
+              min: 0
+              max: 100
+
+        # Ollama Models Size (simulé via taille du volume)
+        - title: 'Taille Volume Ollama'
+          type: graph
+          gridPos:
+            h: 8
+            w: 8
+            x: 8
+            y: 19
+          targets:
+            - expr: 'container_fs_usage_bytes{container_name="ollama"} / 1024 / 1024 / 1024'
+              legendFormat: 'Ollama Data (Go)'
+          yaxes:
+            - format: bytes
+              label: 'Taille (Go)'
+
+        # Row 4: Réseau
+        - title: 'Réseau'
+          type: row
+          gridPos:
+            h: 1
+            w: 24
+            x: 0
+            y: 27
+          collapsed: true
+
+        # Network I/O
+        - title: 'Trafic Réseau'
+          type: graph
+          gridPos:
+            h: 8
+            w: 12
+            x: 0
+            y: 28
+          targets:
+            - expr: 'rate(container_network_receive_bytes_total{container_name=~"ollama|open-webui"}[1m])'
+              legendFormat: '{{container_name}} - Réception'
+            - expr: 'rate(container_network_transmit_bytes_total{container_name=~"ollama|open-webui"}[1m])'
+              legendFormat: '{{container_name}} - Émission'
+          yaxes:
+            - format: bytes
+              label: 'Bytes/s'
+
+        # Row 5: Santé des services
+        - title: 'Santé des Services'
+          type: row
+          gridPos:
+            h: 1
+            w: 24
+            x: 0
+            y: 36
+          collapsed: false
+
+        # Service Health
+        - title: 'État des Services'
+          type: stat
+          gridPos:
+            h: 8
+            w: 6
+            x: 0
+            y: 37
+          targets:
+            - expr: 'up{job="ollama"}'
+              legendFormat: 'Ollama'
+          mappings:
+            - options:
+                0:
+                  text: 'DOWN'
+                  color: red
+                1:
+                  text: 'UP'
+                  color: green
+          threshold:
+            steps:
+              - color: red
+                value: null
+              - color: green
+                value: 1
+
+        - title: 'Open WebUI'
+          type: stat
+          gridPos:
+            h: 8
+            w: 6
+            x: 6
+            y: 37
+          targets:
+            - expr: 'up{job="open-webui"}'
+              legendFormat: 'Open WebUI'
+          mappings:
+            - options:
+                0:
+                  text: 'DOWN'
+                  color: red
+                1:
+                  text: 'UP'
+                  color: green
+
+        - title: 'Prometheus'
+          type: stat
+          gridPos:
+            h: 8
+            w: 6
+            x: 12
+            y: 37
+          targets:
+            - expr: 'up{job="prometheus"}'
+              legendFormat: 'Prometheus'
+          mappings:
+            - options:
+                0:
+                  text: 'DOWN'
+                  color: red
+                1:
+                  text: 'UP'
+                  color: green
+
+        - title: 'Node Exporter'
+          type: stat
+          gridPos:
+            h: 8
+            w: 6
+            x: 18
+            y: 37
+          targets:
+            - expr: 'up{job="node-exporter"}'
+              legendFormat: 'Node Exporter'
+          mappings:
+            - options:
+                0:
+                  text: 'DOWN'
+                  color: red
+                1:
+                  text: 'UP'
+                  color: green
+      templating:
+        list:
+          - name: instance
+            query: 'label_values(node_uname_info, instance)'
+            refresh: 1
+            regex: ''

@@ -1,0 +1,58 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  scrape_timeout: 10s
+
+rule_files:
+  # - "first_rules.yml"
+  # - "second_rules.yml"
+
+scrape_configs:
+  # Scrape Prometheus lui-même
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # Scrape Node Exporter pour les métriques système
+  - job_name: 'node-exporter'
+    static_configs:
+      - targets: ['node-exporter:9100']
+
+  # Scrape cAdvisor pour les métriques des conteneurs Docker
+  - job_name: 'cadvisor'
+    static_configs:
+      - targets: ['cadvisor:8080']
+
+  # Scrape Ollama (si l'endpoint /metrics est disponible)
+  - job_name: 'ollama'
+    static_configs:
+      - targets: ['ollama:11434']
+    metrics_path: '/metrics'
+    # Ollama n'a pas d'endpoint /metrics par défaut, mais on peut surveiller le port
+
+  # Scrape Open WebUI
+  - job_name: 'open-webui'
+    static_configs:
+      - targets: ['open-webui:8080']
+    metrics_path: '/api/health'
+
+# Configuration pour le stockage des données
+storage:
+  tsdb:
+    retention:
+      time: 30d
+      size: "50GB"
+
+# Configuration pour l'alerte (optionnelle)
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          # - alertmanager:9093
+
+# Configuration pour le remote write (optionnelle)
+# remote_write:
+#   - url: "https://your-remote-write-endpoint/api/v1/write"
+#     basic_auth:
+#       username: "your-username"
+#       password: "your-password"
