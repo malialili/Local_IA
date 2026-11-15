@@ -1,5 +1,3 @@
-version: '3.8'
-
 # Configuration optimisée pour GPU NVIDIA
 # Utilisation: docker compose -f docker/compose/gpu.yml up -d
 

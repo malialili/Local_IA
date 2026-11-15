@@ -1,5 +1,3 @@
-version: '3.8'
-
 # Docker Compose avec pré-téléchargement intégré des modèles
 # Ce fichier utilise une image personnalisée avec les modèles pré-chargés
 # 

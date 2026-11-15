@@ -1,5 +1,3 @@
-version: '3.8'
-
 # Configuration optimisée pour CPU seulement (sans GPU)
 # Utilisation: docker compose -f docker/compose/cpu.yml up -d
 

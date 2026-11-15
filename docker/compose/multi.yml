@@ -1,5 +1,3 @@
-version: '3.8'
-
 # Configuration Multi-Backend : Ollama + LocalAI + LM Studio
 # Permet de connecter Open WebUI à plusieurs backends LLM
 # Utilisation: docker compose -f docker/compose/multi.yml up -d

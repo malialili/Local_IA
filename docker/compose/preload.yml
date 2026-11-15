@@ -1,5 +1,3 @@
-version: '3.8'
-
 # Docker Compose avec pré-téléchargement automatique des modèles au démarrage
 # Utilisation: docker compose -f docker-compose-preload.yml up -d
 # 

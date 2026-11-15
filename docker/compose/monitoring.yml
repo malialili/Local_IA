@@ -1,5 +1,3 @@
-version: '3.8'
-
 # Configuration avec monitoring complet (Prometheus + Grafana + Node Exporter)
 # Permet de surveiller l'utilisation des ressources par Ollama et Open WebUI
 # 
